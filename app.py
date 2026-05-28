@@ -445,11 +445,13 @@ with tab_cohort:
     df_compare = df_melt_filtered[df_melt_filtered['Indicador'] == indicador_selecionado]
     pivot_compare = df_compare.pivot(index='Safra (Cohort)', columns='Mês Referência', values='Valor')
     
-    # Formatação elegante da tabela
-    st.dataframe(
-        pivot_compare.style.format("{:,.2f}", na_rep="-").background_gradient(cmap="BuGn", axis=1),
-        use_container_width=True
-    )
+    # Formatação elegante da tabela com fallback seguro para sistemas sem matplotlib
+    try:
+        styled_df = pivot_compare.style.format("{:,.2f}", na_rep="-").background_gradient(cmap="BuGn", axis=1)
+    except Exception:
+        styled_df = pivot_compare.style.format("{:,.2f}", na_rep="-")
+    
+    st.dataframe(styled_df, use_container_width=True)
 
 
 # 6. Rodapé e Links Úteis
