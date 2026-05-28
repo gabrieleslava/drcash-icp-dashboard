@@ -454,7 +454,61 @@ with tab_cohort:
     st.dataframe(styled_df, use_container_width=True)
 
 
-# 6. Rodapé e Links Úteis
+# 6. Visão Cohort: Simulações (Avulsas vs Redes)
+st.markdown("---")
+st.subheader("Cohort de Simulações: Avulsas vs. Redes")
+st.markdown("*Nota: A volumetria abaixo é uma distribuição proporcional ao mix da safra.*")
+
+# Pegando o total de simulações por Safra e Mês
+df_simulacoes = df_melt_filtered[df_melt_filtered['Indicador'] == 'Total de simulações'].copy()
+
+if not df_simulacoes.empty:
+    # Calculando a proporção de Avulsas e Redes por Safra no cadastro
+    df_proporcao = df_clinicas_filtered.groupby(['Safra (Cohort)', 'Tipo de Rede']).size().unstack(fill_value=0)
+    df_proporcao['Total'] = df_proporcao['Avulsas'] + df_proporcao['Redes/Parceiros']
+    df_proporcao['% Avulsas'] = df_proporcao['Avulsas'] / df_proporcao['Total']
+    df_proporcao['% Redes'] = df_proporcao['Redes/Parceiros'] / df_proporcao['Total']
+    
+    # Mesclando e aplicando a proporção (Estimativa baseada na composição da safra)
+    df_simulacoes_tipo = pd.merge(df_simulacoes, df_proporcao[['% Avulsas', '% Redes']], on='Safra (Cohort)', how='left')
+    df_simulacoes_tipo['Simulações Avulsas'] = df_simulacoes_tipo['Valor'] * df_simulacoes_tipo['% Avulsas']
+    df_simulacoes_tipo['Simulações Redes/Parceiros'] = df_simulacoes_tipo['Valor'] * df_simulacoes_tipo['% Redes']
+    
+    # Reestruturando a tabela para o formato ideal do Plotly
+    df_sim_plot = pd.melt(df_simulacoes_tipo, 
+                          id_vars=['Safra (Cohort)', 'Mês Referência'], 
+                          value_vars=['Simulações Avulsas', 'Simulações Redes/Parceiros'],
+                          var_name='Tipo de Clínica', 
+                          value_name='Qtd Simulações')
+    
+    # Gráfico de Linhas Separado por Tipo e Safra com estilização premium
+    fig_simulacoes = px.line(df_sim_plot, 
+                             x='Mês Referência', 
+                             y='Qtd Simulações', 
+                             color='Tipo de Clínica', 
+                             line_dash='Safra (Cohort)',
+                             markers=True,
+                             template="plotly_dark",
+                             color_discrete_map={'Simulações Avulsas': '#0D9488', 'Simulações Redes/Parceiros': '#EF4444'})
+    
+    # Ajustando layout do gráfico para padrão premium dark
+    fig_simulacoes.update_layout(
+        template="plotly_dark",
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        yaxis_title="Volume de Simulações",
+        xaxis_title="Mês de Referência",
+        legend_title="Segmentação",
+        margin=dict(l=20, r=20, t=30, b=20),
+        xaxis=dict(showgrid=True, gridcolor="rgba(255,255,255,0.05)"),
+        yaxis=dict(showgrid=True, gridcolor="rgba(255,255,255,0.05)")
+    )
+    
+    st.plotly_chart(fig_simulacoes, use_container_width=True)
+else:
+    st.info("Não há dados de simulação para as safras selecionadas.")
+
+# 7. Rodapé e Links Úteis
 st.markdown("---")
 col_foot1, col_foot2 = st.columns(2)
 with col_foot1:
