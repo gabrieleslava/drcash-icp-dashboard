@@ -1,0 +1,11 @@
+[theme]
+primaryColor = "#0D9488"          # Medical Teal
+backgroundColor = "#0F172A"       # Deep Slate Dark Background
+secondaryBackgroundColor = "#1E293B" # Card & Sidebar Slate Grey
+textColor = "#F8FAFC"             # Crisp Off-white Text
+font = "sans serif"
+
+[server]
+headless = true
+enableCORS = false
+enableXsrfProtection = false
