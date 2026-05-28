@@ -427,7 +427,7 @@ with tab_cohort:
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
             xaxis=dict(title="Meses desde o Cadastro (Relativo)", tickmode="linear"),
-            yaxis=dict(title="Safra do Cohort", type="category", autorange="reverse"),
+            yaxis=dict(title="Safra do Cohort", type="category", autorange="reversed"),
             margin=dict(l=40, r=40, t=20, b=40),
             height=350
         )
